@@ -1,0 +1,16 @@
+# k8s/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: devsecops-service
+  namespace: default
+  labels:
+    app: devsecops-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: devsecops-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000

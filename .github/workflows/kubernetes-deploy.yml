@@ -54,6 +54,6 @@ jobs:
           kubectl apply --dry-run=client -f k8s/
 
       - name: Deploy to EKS
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
         run: |
           kubectl apply -f k8s/

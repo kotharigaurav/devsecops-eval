@@ -56,10 +56,6 @@ jobs:
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }}
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:latest
 
-      - name: Set deployment image to pushed tag
-        run: |
-          # Replace image in deployment to the newly pushed tag so nodes will pull it
-          kubectl set image deployment/devsecops-app devsecops-app=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }} -n default || true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -76,6 +72,11 @@ jobs:
       - name: Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name devsecops-eks
+
+      - name: Set deployment image to pushed tag
+        run: |
+          # Replace image in deployment to the newly pushed tag so nodes will pull it
+          kubectl set image deployment/devsecops-app devsecops-app=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }} -n default || true
 
       - name: Dry Run (Validation)
         run: |

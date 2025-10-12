@@ -1,7 +1,7 @@
 name: Kubernetes Deploy
 
 on:
-  push:
+#   push:
 #     paths:
 #       - 'k8s/**'
 #       - '.github/workflows/kubernetes-deploy.yml'

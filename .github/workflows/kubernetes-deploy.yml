@@ -32,6 +32,34 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v4
+        with:
+          context: ./app
+          push: true
+          tags: |
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }}
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:latest
+
+      - name: Set deployment image to pushed tag
+        run: |
+          # Replace image in deployment to the newly pushed tag so nodes will pull it
+          kubectl set image deployment/devsecops-app devsecops-app=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }} -n default || true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

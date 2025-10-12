@@ -1,0 +1,48 @@
+name: Terraform CI/CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the environment'
+        required: true
+        default: 'int'
+        type: choice
+        options:
+          - int
+
+jobs:
+  terraform-plan:
+    name: Terraform Plan (requires environment approval)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+
+    environment: ${{ github.event.inputs.environment }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          role-session-name: Terraform-Deployment
+
+      - name: Terraform Init
+        run: terraform init -backend-config="region=${{ vars.AWS_REGION }}"
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan

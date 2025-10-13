@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DevSecOps Demo</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="hero">
+      <div class="card">
+        <img class="avatar" src="/avatar.svg" alt="logo" aria-hidden="true">
+        <h1>DevSecOps Demo</h1>
+        <p class="lead">A tiny Node.js app showcasing infrastructure, CI/CD and Kubernetes.</p>
+
+        <div class="meta">
+          <div>
+            <strong>Live:</strong>
+            <span id="status">Checking...</span>
+          </div>
+          <div>
+            <strong>Cluster:</strong>
+            <span>devsecops-eks</span>
+          </div>
+        </div>
+
+        <p class="resume">Built with: Node.js • Express • Docker • Terraform • GitHub Actions • EKS</p>
+
+        <div class="actions">
+          <a class="btn" href="#" id="refresh">Refresh status</a>
+          <a class="btn ghost" href="https://github.com/kotharigaurav/devsecops-eval" target="_blank">View on GitHub</a>
+        </div>
+
+        <p class="note">Feel free to reuse this as a compact portfolio demo — single file, minimal footprint.</p>
+      </div>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

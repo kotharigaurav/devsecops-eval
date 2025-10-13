@@ -73,16 +73,23 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name devsecops-eks
 
-      - name: Set deployment image to pushed tag
-        run: |
-          # Replace image in deployment to the newly pushed tag so nodes will pull it
-          kubectl set image deployment/devsecops-app devsecops-app=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }} -n default || true
-
       - name: Dry Run (Validation)
         run: |
           kubectl apply --dry-run=client -f k8s/
 
-      - name: Deploy to EKS
-        # if: github.ref == 'refs/heads/main'
+      - name: Deploy manifests to EKS (create/update resources)
         run: |
           kubectl apply -f k8s/
+
+      - name: Set deployment image to pushed tag
+        run: |
+          # Ensure deployment uses the image we just built and pushed
+          kubectl set image deployment/devsecops-app devsecops-app=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }} -n default
+
+      - name: Wait for rollout and show status
+        run: |
+          kubectl rollout status deployment/devsecops-app -n default --timeout=120s || true
+          kubectl get pods -n default -o wide
+          echo '--- If there are ImagePull or CrashLoopBackOff errors, describe pods for details ---'
+          kubectl describe pods -n default || true
+          kubectl get events -n default --sort-by='.metadata.creationTimestamp' || true

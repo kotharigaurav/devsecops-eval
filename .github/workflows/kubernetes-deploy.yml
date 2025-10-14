@@ -1,0 +1,107 @@
+name: Kubernetes Deploy
+
+on:
+#   push:
+#     paths:
+#       - 'k8s/**'
+#       - '.github/workflows/kubernetes-deploy.yml'
+#   pull_request:
+#     # branches:
+#     #   - main
+#     paths:
+#       - 'k8s/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the environment'
+        required: true
+        default: 'int'
+        type: choice
+        options:
+          - int
+
+jobs:
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v4
+        with:
+          context: ./app
+          push: true
+          tags: |
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }}
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:latest
+
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          role-session-name: Kubernetes-Deployment
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name devsecops-eks
+
+      - name: Create Kubernetes secret from GitHub Secrets
+        if: ${{ always() }}
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+        run: |
+          # idempotent creation of app-secret from repo secrets
+          kubectl create secret generic app-secret \
+            --from-literal=DB_USER="$DB_USER" \
+            --from-literal=DB_PASS="$DB_PASS" \
+            -n default --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Dry Run (Validation)
+        run: |
+          kubectl apply --dry-run=client -f k8s/
+
+      - name: Deploy manifests to EKS (create/update resources)
+        run: |
+          kubectl apply -f k8s/
+
+      - name: Set deployment image to pushed tag
+        run: |
+          # Ensure deployment uses the image we just built and pushed
+          kubectl set image deployment/devsecops-app devsecops-app=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app:${{ github.sha }} -n default
+
+      - name: Wait for rollout and show status
+        run: |
+          kubectl rollout status deployment/devsecops-app -n default --timeout=120s || true
+          kubectl get pods -n default -o wide
+          echo '--- If there are ImagePull or CrashLoopBackOff errors, describe pods for details ---'
+          kubectl describe pods -n default || true
+          kubectl get events -n default --sort-by='.metadata.creationTimestamp' || true

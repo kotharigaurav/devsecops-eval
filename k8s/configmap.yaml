@@ -1,0 +1,9 @@
+# k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: default
+data:
+  APP_MESSAGE: "Hello from DevSecOps on EKS!"
+  NODE_ENV: "production"

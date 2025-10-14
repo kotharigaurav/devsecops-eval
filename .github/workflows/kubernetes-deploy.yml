@@ -73,6 +73,18 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name devsecops-eks
 
+      - name: Create Kubernetes secret from GitHub Secrets
+        if: ${{ always() }}
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+        run: |
+          # idempotent creation of app-secret from repo secrets
+          kubectl create secret generic app-secret \
+            --from-literal=DB_USER="$DB_USER" \
+            --from-literal=DB_PASS="$DB_PASS" \
+            -n default --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Dry Run (Validation)
         run: |
           kubectl apply --dry-run=client -f k8s/

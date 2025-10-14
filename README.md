@@ -1,1 +1,101 @@
-# devsecops-eval
+### REPO STRUCTURE
+
+devsecops-eval/
+├── .github/
+│   └── workflows/
+│       ├── eks-diagnose.ym
+│       ├── kubernetes-deploy.yml
+│       └── terraform.yml
+├── app/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── server.js
+│
+├── infra/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── terraform.tf
+│   ├── provider.tf
+│   ├── terraform.tfvars
+│   └── modules/
+│       ├── vpc/
+│       └── eks/
+│
+├── k8s/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── configmap.yaml
+│   └── secret.yaml
+│
+├── docs/
+│   ├── README.md
+│   ├── architecture-diagram.png
+│   ├── screenshots/
+│   │   ├── pods-running.png
+│   │   ├── pipeline-success.png
+│   │   └── loadbalancer-access.png
+│   └── DevSecOps_Project_Report.pdf
+│
+└── README.md
+
+# 🚀 DevSecOps EKS Project
+
+This project builds a full AWS EKS-based DevSecOps environment using Terraform, Docker, and GitHub Actions.
+
+---
+
+## 🧱 Architecture Overview
+
+- AWS VPC (public/private subnets)
+- EKS Cluster (with managed node groups)
+- S3 backend for Terraform state
+- Node.js + Express sample app
+- CI/CD via GitHub Actions
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/<your-username>/devsecops-eval.git
+cd devsecops-eval
+
+
+### Terraform (IaC)
+#### Infra Provisioning:
+ - VPC with 2 public and 2 private subnets
+ - Internet Gateway + NAT Gateway
+ - EKS Cluster + Node Group
+ - S3 backend for state file
+
+### 2️⃣ Deploy Infrastructure
+cd infra
+terraform init
+terraform apply -auto-approve
+
+### 3️⃣ Deploy Application
+Push to main branch to trigger the Kubernetes workflow automatically.
+Alternatively:
+
+aws eks update-kubeconfig --region ap-south-1 --name devsecops-eks
+kubectl apply -f k8s/
+
+### 4️⃣ Access the App
+Get the external load balancer URL:
+kubectl get svc devsecops-service
+
+Then open in browser:
+http://<elb-dns-name>
+
+### Validation Steps
+Run kubectl get nodes → shows Ready nodes
+Run kubectl get pods → shows running app pods
+Visit ELB DNS → application accessible
+CI/CD pipelines show “Success” on GitHub Actions
+
+👤 Author
+Gaurav Kothari
+DevOps Engineer | AWS | Terraform | Kubernetes
+📧 kotharigaurav22@gmail.com
+https://www.linkedin.com/in/iamgauravkothari/

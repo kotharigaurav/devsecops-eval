@@ -32,8 +32,8 @@ devsecops-eval/
 │       └── terraform.yml
 ├── app/
 │   ├── Dockerfile
-	│   ├── package.json
-	│   └── server.js
+|	│   ├── package.json
+|	│   └── server.js
 │   └── public/
 │       ├── index.html
 │       ├── app.js
@@ -116,8 +116,9 @@ kubectl get svc devsecops-service
 ```
 
 Then open in browser:
-
+```powershell
 http://<elb-dns-name>
+```
 
 ### Validation Steps
 

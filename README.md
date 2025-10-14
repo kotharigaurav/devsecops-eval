@@ -1,3 +1,26 @@
+# DevSecOps EKS Project
+
+A sample DevSecOps project that demonstrates provisioning an AWS EKS cluster with Terraform, packaging an Express app with Docker, and deploying via GitHub Actions.
+
+This repository includes:
+
+- Terraform configuration for VPC and EKS (under `infra/`).
+- Kubernetes manifests (under `k8s/`) for Deployment, Service, ConfigMap and Secret template.
+- A small Node.js Express app (under `app/`) with a simple SPA.
+- GitHub Actions workflows for Terraform and Kubernetes deployment (`.github/workflows/`).
+- Documentation and guidance (`docs/`).
+
+---
+
+## Quick start (local)
+
+Prerequisites:
+
+- Node.js (v18+)
+- Docker (for container builds)
+- kubectl (for interacting with the cluster)
+- terraform (if you plan to provision infra)
+
 ### REPO STRUCTURE
 
 devsecops-eval/
@@ -57,13 +80,10 @@ This project builds a full AWS EKS-based DevSecOps environment using Terraform, 
 ## ⚙️ Setup Instructions
 
 ### 1️⃣ Clone the Repository
-```bash
 git clone https://github.com/<your-username>/devsecops-eval.git
 cd devsecops-eval
 
-
-### Terraform (IaC)
-#### Infra Provisioning:
+###  Terraform (IaC) - Infra Provisioning:
  - VPC with 2 public and 2 private subnets
  - Internet Gateway + NAT Gateway
  - EKS Cluster + Node Group

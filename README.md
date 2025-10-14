@@ -127,6 +127,24 @@ http://<elb-dns-name>
 - Visit the ELB DNS — application accessible
 - CI/CD pipelines should show “Success” on GitHub Actions
 
+### 📸 Screenshots
+![Website](docs/website.png)
+
+![Pods](docs/pods.png)
+
+![CICD Execution](docs/cicd_execution.png)
+
+### 🔒 Security Risks Identified
+- Secrets stored as base64 in YAML
+- Open inbound security group (0.0.0.0/0)
+- No RBAC or pod security policy
+
+### ✅ Mitigations & Future Improvements
+- Migrate secrets to AWS Secrets Manager
+- Restrict SG rules to known IPs
+- Implement RBAC and IRSA for granular access
+- Add network policies for pod-level isolation
+
 ## Author
 
 👤 Gaurav Kothari
